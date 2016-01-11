@@ -1,0 +1,8 @@
+Package: fixtime
+Version: 0.1
+Section: net
+Priority: optional
+Architecture: all
+Depends: debconf (>= 0.2.26)
+Maintainer: Sergey Melekhin <sergey@melekhin.me>
+Description: Fix time on power on for dead notebook batteries.

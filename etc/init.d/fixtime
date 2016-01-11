@@ -1,0 +1,79 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          fixtime
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Fix time on system startup.
+# Description:       Save time to file and restore it on systemload (crude fix for dead notebook battery clearing cmos on poweroff)
+### END INIT INFO
+
+# Author: Foo Bar <sergey@melekhin.me>
+#
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Fix system time"
+TIME_FILE="/var/run/fix_time"
+TIME_SERVER="time.nist.gov"
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+do_start()
+{
+    ntpdate $TIME_SERVER 2>&1 > /dev/null
+    RETVAL=$?
+    if [ ! $RETVAL = 0 ]
+    then
+        TIME=$(cat $TIME_FILE) &&
+        hwclock --set --date "$TIME" &&
+        hwclock --hctosys
+        RETVAL=$?
+    fi
+    return $RETVAL
+}
+
+do_stop()
+{
+    if [ ! -f $TIME_FILE ]
+    then
+        touch $TIME_FILE
+        chmod 600 $TIME_FILE
+    fi
+    ntpdate $TIME_SERVER 2>&1 > /dev/null
+    date -R > $TIME_FILE
+    return $?
+}
+
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" 
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  *)
+	echo "Usage: fixtine {start|stop}" >&2
+	exit 3
+	;;
+esac
+
+:

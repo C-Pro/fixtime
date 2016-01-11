@@ -1,0 +1,4 @@
+#!/bin/bash
+# periodically update time in /var/run/fix_time
+service fixtime stop
+
