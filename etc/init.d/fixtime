@@ -9,7 +9,7 @@
 # Description:       Save time to file and restore it on systemload (crude fix for dead notebook battery clearing cmos on poweroff)
 ### END INIT INFO
 
-# Author: Foo Bar <sergey@melekhin.me>
+# Author: Sergey Melekhin <sergey@melekhin.me>
 #
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
@@ -26,9 +26,16 @@ TIME_SERVER="time.nist.gov"
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-do_start()
+do_sync()
 {
     ntpdate $TIME_SERVER 2>&1 > /dev/null
+    return $?
+}
+
+
+do_start()
+{
+    do_sync
     RETVAL=$?
     if [ ! $RETVAL = 0 ]
     then
@@ -47,7 +54,7 @@ do_stop()
         touch $TIME_FILE
         chmod 600 $TIME_FILE
     fi
-    ntpdate $TIME_SERVER 2>&1 > /dev/null
+    do_sync
     date -R > $TIME_FILE
     return $?
 }
