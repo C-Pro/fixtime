@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -x
 ### BEGIN INIT INFO
 # Provides:          fixtime
 # Required-Start:    $remote_fs $syslog
@@ -15,7 +15,7 @@
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Fix system time"
-TIME_FILE="/var/run/fix_time"
+TIME_FILE="/var/cache/fix_time"
 TIME_SERVER="time.nist.gov"
 
 # Load the VERBOSE setting and other rcS variables
@@ -37,7 +37,7 @@ do_start()
 {
     do_sync
     RETVAL=$?
-    if [ ! $RETVAL = 0 ]
+    if [ "$RETVAL" -ne "0" ]
     then
         TIME=$(cat $TIME_FILE) &&
         hwclock --set --date "$TIME" &&
